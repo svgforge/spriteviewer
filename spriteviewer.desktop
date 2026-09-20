@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Sprite Viewer
+GenericName=SVG sprite viewer
+Comment=Browse the icons stored in an SVG sprite file
+Exec=spriteviewer %F
+Icon=spriteviewer
+Terminal=false
+Categories=Graphics;Viewer;
+Keywords=svg;sprite;icons;
+MimeType=image/svg+xml;
+StartupNotify=true

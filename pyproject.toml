@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spriteviewer"
+dynamic = ["version"]
+description = "PySide6 tile viewer for SVG icon sprites"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "GPL-3.0-or-later"
+dependencies = [
+    "PySide6>=6.6",
+    "resvg-py>=0.5.0",  # full SVG 1.1 support (markers, filters, …)
+]
+
+[project.scripts]
+spriteviewer = "spriteviewer.app:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+spriteviewer = ["*.svg"]
+
+[tool.setuptools.dynamic]
+version = {attr = "spriteviewer._version.__version__"}
