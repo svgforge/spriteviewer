@@ -75,9 +75,7 @@ class _CenteredIconDelegate(QStyledItemDelegate):
                 painter.setRenderHint(QPainter.RenderHint.Antialiasing)
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.setBrush(option.palette.highlight())
-                painter.drawRoundedRect(
-                    option.rect.adjusted(2, 2, -2, -2), 4.0, 4.0
-                )
+                painter.drawRoundedRect(option.rect.adjusted(2, 2, -2, -2), 4.0, 4.0)
             finally:
                 painter.restore()
         else:
@@ -282,7 +280,10 @@ class MainWindow(QMainWindow):
             str(self._sprite_path.parent) if self._sprite_path else str(Path.home())
         )
         path, _ = QFileDialog.getOpenFileName(
-            self, "Open Sprite", start_dir, "SVG files (*.svg *.svgz *.svg.gz *.svg.zip);;All files (*)"
+            self,
+            "Open Sprite",
+            start_dir,
+            "SVG files (*.svg *.svgz *.svg.gz *.svg.zip);;All files (*)",
         )
         if not path:
             return
