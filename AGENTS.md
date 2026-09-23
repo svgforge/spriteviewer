@@ -1,69 +1,76 @@
-# AGENTS.md — Verbindliche Arbeitsregeln für den Sprite-Viewer
+# AGENTS.md — Binding working rules for the Sprite-Viewer
 
-Diese Datei ist verbindlich. Jeder Agent, der in diesem Repository arbeitet, MUSS
-diese Regeln vor jeder Aktion gelesen und verstanden haben.
+This file is binding. Every agent working in this repository MUST have read
+and understood these rules before taking any action.
 
-## 6. Bestätigungspflicht (VOR jeder Operation)
+## 1. Language — EVERYTHING IN ENGLISH (non-negotiable)
 
-**Standard-Verfahren für jede Aktion, die etwas verändert (löscht, bewegt,
-überschreibt, schreibt, installiert, bereinigt): zunächst dem Menschen eine
-konkrete Liste der betroffenen Pfade/Dateien vorlegen, die exakt benannten
-Aktionstate zeigen und auf sein ausdrückliches „ja" warten, BEVOR die
-Ausführung beginnt. Kein Bestätigen „im selben Atemzug" mit der Ausführung.
-Ausnahme nur bei rein lesenden Aktionen, die den Zustand nicht verändern.
+All code, comments, identifiers, documentation (including this file, README,
+CHANGELOG, docs/), commit messages, issue/PR titles and descriptions, and any
+communication with the human are written in English — no other language in any
+repository artifact. Existing non-English content (e.g. this file) is
+translated to English and stays English.
 
-## 1. Arbeitsbereich (NICHT verhandelbar)
+## 2. Confirmation duty (BEFORE every operation)
 
-- Arbeite **AUSSCHLIESSLICH** innerhalb des Projektordners
-  `sprite-viewer/`. Niemals außerhalb — auch nicht zum „Helfen", „Suchen" oder
-  „Wiederherstellen".
-- Das Durchsuchen, Lesen oder Verändern von Pfaden außerhalb dieses
-  Projektordners, Papierkorb, Home, History-Ordner
-  anderer Apps) ist **verboten**, es sei denn, der Mensch erteilt es
-  **ausdrücklich und mehrmals** für einen **konkret benannten** Pfad.
-- Wenn für eine Rettung/Aufräumaktion ein Zugriff außerhalb des Projekts nötig
-  wäre: **Stopp und frage den Menschen.** Mach ohne dessen Zustimmung GAR nichts.
+**Standard procedure for every action that changes something (deletes, moves,
+overwrites, writes, installs, cleans up): first present the human a concrete
+list of the affected paths/files showing the exactly named action steps, and
+wait for their explicit "yes" BEFORE execution begins. No confirming "in the
+same breath" as executing. Exception only for purely read-only actions that do
+not change state.
 
-## 2. Destruktive Aktionen (Löschen, Bewegen, Umschreiben)
+## 3. Working area (non-negotiable)
 
-- **Niemals** Dateien oder Verzeichnisse löschen, ohne dass der Mensch es
-  **ausdrücklich angeordnet hat** — weder im Projekt noch anderswo.
-- **Gitignierte Verzeichnisse sind absolut tabu**, sofern der Mensch es nicht
-  ausdrücklich sagt. Sie gehören dem Menschen (z. B. temporäre Skripte).
-  Dazu gehört hier insbesondere: `WORKX/` (siehe `.gitignore`).
-- Kein `rm -r`, kein `mv` in fremde Bereiche, kein Umbenennen, das Inhalte
-  verliert. Bei Unsicherheit: NICHTS tun und fragen.
-- Ein irreversibler Fehler (gelöschte, private Dateien) macht nicht
-  führungsloses Herumwühlen im System nötig — schlimmer noch: Dieses Wühlen
-  bricht dieselbe Regel erneut. Stoppen und ehrlich kommunizieren.
+- Work **EXCLUSIVELY** inside the project folder `sprite-viewer/`. Never
+  outside — not even to "help", "search" or "restore".
+- Searching, reading or modifying paths outside this project folder (trash,
+  home, history folders of other apps, etc.) is **forbidden**, unless the
+  human grants it **explicitly and repeatedly** for a **concretely named**
+  path.
+- If a rescue/cleanup action would require access outside the project: **stop
+  and ask the human.** Do NOTHING without their consent.
 
-## 3. Projektarchitektur (eingehaltene Konventionen)
+## 4. Destructive actions (deleting, moving, rewriting)
 
-- **src-Layout (PEP 517)**: Das Paket liegt in `src/spriteviewer/`.
-  Entwicklungs-Einstieg ist `main.py` (hängt `src/` auf den `sys.path`);
-  installierter Einstieg ist die Console-Script-Funktion in
+- **Never** delete files or directories unless the human has **explicitly
+  ordered** it — neither in the project nor elsewhere.
+- **Gitignored directories are absolutely off-limits**, unless the human says
+  so explicitly. They belong to the human (e.g. temporary scripts). This
+  includes in particular here: `WORKX/` (see `.gitignore`).
+- No `rm -r`, no `mv` into foreign areas, no renaming that loses content. When
+  in doubt: do NOTHING and ask.
+- An irreversible mistake (deleted, private files) does not justify aimless
+  rummaging through the system — worse: such rummaging breaks the same rule
+  again. Stop and communicate honestly.
+
+## 5. Project architecture (conventions to keep)
+
+- **src-layout (PEP 517)**: The package lives in `src/spriteviewer/`.
+  Development entry point is `main.py` (adds `src/` to `sys.path`); the
+  installed entry point is the console-script function in
   `src/spriteviewer/app.py:main`.
-- **CLI = GNU getopt** (stdlib `getopt.gnu_getopt`), bewusst KEIN argparse:
-  - Optionen und Sprite dürfen durcheinander stehen (interleave).
-  - `-S 32`, `-S32`, `--size 32`, `--size=32` sind alle äquivalent.
-  - `--` beendet die Options-Parsing.
-  - **Es gibt KEIN `--sprite`/`-s`**: Der Sprite-Dateipfad ist rein
-    positionell (erster Operand; Default: gebündeltes Sprite).
-- **SVG-Assets**: Die einzige Quelle sind die gebündelten Kopien in
-  `src/spriteviewer/{icons,spriteviewer}.svg` (installiert durch
-  `install.py`/`sync_assets`). Im Projekt-Root liegen keine doppelten
-  SVG-Repräsentationen (keine Duplikate anlegen).
+- **CLI = GNU getopt** (stdlib `getopt.gnu_getopt`), deliberately NO argparse:
+  - Options and the sprite may interleave.
+  - `-S 32`, `-S32`, `--size 32`, `--size=32` are all equivalent.
+  - `--` ends option parsing.
+  - **There is NO `--sprite`/`-s`**: The sprite file path is purely positional
+    (first operand; default: bundled sprite).
+- **SVG assets**: The only source is the bundled copies in
+  `src/spriteviewer/{icons,spriteviewer}.svg` (installed via
+  `install.py`/`sync_assets`). No duplicate SVG representations in the project
+  root (do not create duplicates).
 
-## 4. Umgang mit Assets und History
+## 6. Handling assets and history
 
-- Keine Asset-Dateien blind aus `build/`-Artefakten, History-Ordnern oder
-  fremden Kopien „zurücksynchronisieren" — der Quellstand ist
-  `src/spriteviewer/`.
+- Do not blindly "resync" asset files from `build/` artifacts, history folders
+  or foreign copies — the source of truth is `src/spriteviewer/`.
 
-## 5. Verhalten
+## 7. Behaviour
 
-- Nie heimlich, nie ohne Rückfrage, nie mehr als vom Menschen verlangt.
-- Immer nur das tun, was der Mensch aktuell anfordert — keine übermotivierte
-  Eigeninitiative, keine „Aufräumaktionen" ohne Auftrag.
-- Fehler zugeben, nicht vertuschen; bei Schäden sofort mitteilen und die
-  nächste Aktion von der Freigabe des Menschen abhängig machen.
+- Never secretly, never without asking back, never more than the human asks
+  for.
+- Always do only what the human currently requests — no overzealous own
+  initiative, no "cleanup actions" without a commission.
+- Admit mistakes, do not cover them up; in case of damage report immediately
+  and make the next action dependent on the human's approval.

@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from PySide6.QtCore import QRect, QSize, Qt, QThread, Signal
-from PySide6.QtGui import QIcon, QImage, QPixmap
+from PySide6.QtGui import QIcon, QImage, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -67,9 +67,19 @@ class _CenteredIconDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         if option.state & QStyle.State_Selected:
-            # Full-cell selection, painted directly so it looks the same on
-            # every style; only the color comes from the theme palette.
-            painter.fillRect(option.rect, option.palette.highlight())
+            # Selection painted directly so it looks the same on every style
+            # and platform; only the colour comes from the theme palette.
+            # Inset by 2 px (gap to neighbours) with a small border radius.
+            painter.save()
+            try:
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(option.palette.highlight())
+                painter.drawRoundedRect(
+                    option.rect.adjusted(2, 2, -2, -2), 4.0, 4.0
+                )
+            finally:
+                painter.restore()
         else:
             styled = QStyleOptionViewItem(option)
             self.initStyleOption(styled, index)

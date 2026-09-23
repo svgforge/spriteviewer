@@ -13,11 +13,12 @@ a responsive tile grid.
 - Fast QtSvg (SVG Tiny) rendering by default, with optional full **SVG 1.1**
   via **resvg** (gradients, filters, masks, …) — switchable live from the
   toolbar and via the `--renderer` flag, so sprites like the Tango icon set
-  render exactly
+  render exactly (but slower).
 - Toolbar dropdown to switch the icon size: 16, 32, 64, 128 or 256 px
 - Icons are rendered asynchronously in the background, so the UI stays responsive
 - Right-click → **Copy id** or **Copy SVG** puts the fragment id(s) or the
-  standalone SVG code on the clipboard (works for single and multi-selection)
+  standalone SVG code on the clipboard (works for single and multi-selection).
+  You can select multiple icons with Ctrl + click.
 - **Open Sprite** button in the status bar loads a different SVG sprite at runtime
 - Status bar shows the selection / icon count
 - Cross-platform, installable via a one-line installer or `pip`
