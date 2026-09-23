@@ -132,6 +132,11 @@ Any SVG file passed as an argument is used as the sprite, which also lets you
 hand it files from your file manager. `python -m spriteviewer` works the same
 way as `./main.py`.
 
+Compressed sprites are read transparently: gzip-packed files (`.svgz` or
+`.svg.gz`) and zip archives containing a single `.svg` (`.svg.zip`) work
+exactly like plain `.svg` files. A zip with several `.svg` members is rejected
+with a clear error — an icon pack is not a sprite.
+
 ## Project structure
 
 ```

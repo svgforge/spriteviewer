@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import gzip
 import xml.etree.ElementTree as ET
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -53,6 +55,30 @@ class Icon:
     svg: str  # self-contained SVG document for this icon
 
 
+def read_sprite_text(path: str | Path) -> str:
+    """Read an SVG sprite, transparently decompressing .svgz/.svg.gz/.zip."""
+    path = Path(path)
+    suffix = path.suffix.lower()
+    if suffix in (".svgz", ".gz"):
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            return handle.read()
+    if suffix == ".zip":
+        with zipfile.ZipFile(path) as archive:
+            members = [
+                name for name in archive.namelist() if name.lower().endswith(".svg")
+            ]
+            if not members:
+                raise ValueError(f"'{path}' contains no .svg file")
+            if len(members) > 1:
+                raise ValueError(
+                    f"'{path}' contains {len(members)} .svg files; "
+                    "extract the sprite first"
+                )
+            return archive.read(members[0]).decode("utf-8")
+    with open(path, encoding="utf-8") as handle:
+        return handle.read()
+
+
 class IconStore:
     """Loads an SVG sprite file and exposes its icons."""
 
@@ -64,8 +90,7 @@ class IconStore:
     ):
         self._renderer = resolve_renderer(renderer)
         if xml is None:
-            with open(path, encoding="utf-8") as handle:
-                xml = handle.read()
+            xml = read_sprite_text(path)
         self.icons = self._extract(xml)
 
     @property

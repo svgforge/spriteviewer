@@ -20,10 +20,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSizePolicy,
+    QStackedWidget,
     QStyle,
     QStyledItemDelegate,
     QStyleOptionViewItem,
     QToolBar,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -64,13 +66,18 @@ class _CenteredIconDelegate(QStyledItemDelegate):
     """
 
     def paint(self, painter, option, index):
-        styled = QStyleOptionViewItem(option)
-        self.initStyleOption(styled, index)
-        styled.text = ""
-        styled.icon = QIcon()
-        widget = styled.widget
-        style = widget.style() if widget else QApplication.style()
-        style.drawControl(QStyle.CE_ItemViewItem, styled, painter, widget)
+        if option.state & QStyle.State_Selected:
+            # Full-cell selection, painted directly so it looks the same on
+            # every style; only the color comes from the theme palette.
+            painter.fillRect(option.rect, option.palette.highlight())
+        else:
+            styled = QStyleOptionViewItem(option)
+            self.initStyleOption(styled, index)
+            styled.text = ""
+            styled.icon = QIcon()
+            widget = styled.widget
+            style = widget.style() if widget else QApplication.style()
+            style.drawControl(QStyle.CE_ItemViewItem, styled, painter, widget)
 
         icon = index.data(Qt.DecorationRole)
         if icon is None:
@@ -208,9 +215,23 @@ class MainWindow(QMainWindow):
         grid.currentItemChanged.connect(self._update_status)
         grid.itemSelectionChanged.connect(self._update_status)
         self._grid = grid
-        self.setCentralWidget(grid)
+        self._empty_state = self._build_empty_state()
+        self._stack = QStackedWidget()
+        self._stack.addWidget(grid)
+        self._stack.addWidget(self._empty_state)
+        self.setCentralWidget(self._stack)
         self._set_icon_size(self._current_size)
         self._populate_grid()
+
+    def _build_empty_state(self) -> QWidget:
+        """Centered notice shown when the sprite contains no symbols."""
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        label = QLabel("no valid svg file with symbols")
+        label.setAlignment(Qt.AlignCenter)
+        label.setWordWrap(True)
+        layout.addWidget(label)
+        return page
 
     def _populate_grid(self):
         self._grid.clear()
@@ -221,6 +242,7 @@ class MainWindow(QMainWindow):
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             item.setSizeHint(QSize(width, height))
             self._grid.addItem(item)
+        self._stack.setCurrentIndex(0 if self._icons else 1)
 
     def _cell_size(self, size: int) -> tuple[int, int]:
         """Square cell: icon plus the same small margin on every side."""
@@ -250,7 +272,7 @@ class MainWindow(QMainWindow):
             str(self._sprite_path.parent) if self._sprite_path else str(Path.home())
         )
         path, _ = QFileDialog.getOpenFileName(
-            self, "Open Sprite", start_dir, "SVG files (*.svg);;All files (*)"
+            self, "Open Sprite", start_dir, "SVG files (*.svg *.svgz *.svg.gz *.svg.zip);;All files (*)"
         )
         if not path:
             return

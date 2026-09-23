@@ -18,7 +18,7 @@ Ausnahme nur bei rein lesenden Aktionen, die den Zustand nicht verändern.
   `sprite-viewer/`. Niemals außerhalb — auch nicht zum „Helfen", „Suchen" oder
   „Wiederherstellen".
 - Das Durchsuchen, Lesen oder Verändern von Pfaden außerhalb dieses
-  Projektordners (z. B. `/home/pi/PROG/...`, Papierkorb, Home, History-Ordner
+  Projektordners, Papierkorb, Home, History-Ordner
   anderer Apps) ist **verboten**, es sei denn, der Mensch erteilt es
   **ausdrücklich und mehrmals** für einen **konkret benannten** Pfad.
 - Wenn für eine Rettung/Aufräumaktion ein Zugriff außerhalb des Projekts nötig
@@ -59,10 +59,6 @@ Ausnahme nur bei rein lesenden Aktionen, die den Zustand nicht verändern.
 - Keine Asset-Dateien blind aus `build/`-Artefakten, History-Ordnern oder
   fremden Kopien „zurücksynchronisieren" — der Quellstand ist
   `src/spriteviewer/`.
-- Falls je ein WORKX-Verlust eintritt: Nicht selbst im Dateisystem wühlen.
-  Dem Menschen transparent Bericht erstatten und Optionen (Papierkorb,
-  VSCode-Local-History, Recovery-Tools) **beschreiben**, aber erst nach
-  ausdrücklicher Freigabe ausführen.
 
 ## 5. Verhalten
 

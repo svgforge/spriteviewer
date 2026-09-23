@@ -1,5 +1,8 @@
 """Tests for parsing and rendering SVG sprites."""
 
+import gzip
+import zipfile
+
 import pytest
 
 from spriteviewer.icon_store import IconStore, has_resvg, resolve_renderer
@@ -94,3 +97,60 @@ def test_resolve_renderer_unknown_raises():
 def test_explicit_resvg_without_package_raises():
     with pytest.raises(RuntimeError):
         resolve_renderer("resvg")
+
+
+def test_reads_gzip_compressed_sprite(tmp_path):
+    sprite = tmp_path / "sprite.svg.gz"
+    sprite.write_bytes(gzip.compress(SPRITE.encode("utf-8")))
+
+    store = IconStore(sprite)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+
+
+def test_reads_svgz_sprite(tmp_path):
+    sprite = tmp_path / "sprite.svgz"
+    sprite.write_bytes(gzip.compress(SPRITE.encode("utf-8")))
+
+    store = IconStore(sprite)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+
+
+def test_reads_zip_containing_single_svg(tmp_path):
+    sprite = tmp_path / "sprite.svg.zip"
+    with zipfile.ZipFile(sprite, "w") as archive:
+        archive.writestr("sprite.svg", SPRITE)
+
+    store = IconStore(sprite)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+
+
+def test_reads_zip_containing_nested_single_svg(tmp_path):
+    sprite = tmp_path / "sprite.svg.zip"
+    with zipfile.ZipFile(sprite, "w") as archive:
+        archive.writestr("icons/sprite.svg", SPRITE)
+
+    store = IconStore(sprite)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+
+
+def test_zip_without_svg_raises(tmp_path):
+    sprite = tmp_path / "sprite.svg.zip"
+    with zipfile.ZipFile(sprite, "w") as archive:
+        archive.writestr("readme.txt", "no svg here")
+
+    with pytest.raises(ValueError):
+        IconStore(sprite)
+
+
+def test_zip_with_multiple_svgs_raises(tmp_path):
+    sprite = tmp_path / "sprite.svg.zip"
+    with zipfile.ZipFile(sprite, "w") as archive:
+        archive.writestr("one.svg", SPRITE)
+        archive.writestr("two.svg", SPRITE)
+
+    with pytest.raises(ValueError):
+        IconStore(sprite)
