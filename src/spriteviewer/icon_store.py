@@ -8,6 +8,7 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from defusedxml.ElementTree import fromstring as _safe_fromstring
 from PySide6.QtCore import QByteArray, QRectF, Qt
 from PySide6.QtGui import QImage, QPainter
 from PySide6.QtSvg import QSvgRenderer
@@ -90,6 +91,8 @@ class IconStore:
     ):
         self._renderer = resolve_renderer(renderer)
         if xml is None:
+            if path is None:
+                raise ValueError("either 'path' or 'xml' must be provided")
             xml = read_sprite_text(path)
         self.icons = self._extract(xml)
 
@@ -107,7 +110,7 @@ class IconStore:
         return _RENDERER_LABELS[self._renderer]
 
     def _extract(self, xml: str) -> list[Icon]:
-        root = ET.fromstring(xml)
+        root = _safe_fromstring(xml)
         default_viewbox = root.get("viewBox", "0 0 64 64")
         icons = []
         for symbol in root.iter(f"{{{SVG_NS}}}symbol"):
@@ -120,7 +123,10 @@ class IconStore:
 
     @staticmethod
     def _parse_viewbox(value: str) -> tuple[float, float, float, float]:
-        x, y, w, h = (float(v) for v in value.split())
+        parts = value.replace(",", " ").split()
+        if len(parts) != 4:
+            raise ValueError(f"invalid viewBox: {value!r}")
+        x, y, w, h = (float(v) for v in parts)
         return x, y, w, h
 
     @staticmethod

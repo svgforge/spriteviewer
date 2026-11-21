@@ -189,6 +189,23 @@ def install_macos(executable: Path) -> None:
     log(f"wrote {app_dir}")
 
 
+def _ps_quote(value: str | Path) -> str:
+    """Escape a value for a PowerShell single-quoted string."""
+    return str(value).replace("'", "''")
+
+
+def _windows_shortcut_script(shortcut: Path, executable: Path) -> str:
+    """Build the PowerShell script that creates a Windows Start Menu shortcut."""
+    return (
+        "$ws = New-Object -ComObject WScript.Shell;"
+        f"$sc = $ws.CreateShortcut('{_ps_quote(shortcut)}');"
+        f"$sc.TargetPath = '{_ps_quote(executable)}';"
+        f"$sc.WorkingDirectory = '{_ps_quote(os.path.dirname(executable))}';"
+        f"$sc.Description = '{_ps_quote(APP_NAME)}';"
+        "$sc.Save()"
+    )
+
+
 def install_windows(executable: Path) -> None:
     programs = (
         Path(os.environ["APPDATA"])
@@ -200,14 +217,7 @@ def install_windows(executable: Path) -> None:
     programs.mkdir(parents=True, exist_ok=True)
     shortcut = programs / f"{APP_NAME}.lnk"
 
-    script = (
-        "$ws = New-Object -ComObject WScript.Shell;"
-        f"$sc = $ws.CreateShortcut('{shortcut}');"
-        f"$sc.TargetPath = '{executable}';"
-        f"$sc.WorkingDirectory = '{os.path.dirname(executable)}';"
-        f"$sc.Description = '{APP_NAME}';"
-        "$sc.Save()"
-    )
+    script = _windows_shortcut_script(shortcut, executable)
     run("powershell", "-NoProfile", "-NonInteractive", "-Command", script)
     log(f"wrote shortcut {shortcut}")
 
