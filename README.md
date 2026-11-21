@@ -1,8 +1,11 @@
 # SVG Sprite Viewer
 
+[![CI][ci-badge]][ci-url] [![Release][release-badge]][release-url] [![License][license-badge]][license-url]
+[![Python][python-badge]][python-url] [![PySide6][pyside-badge]][pyside-url] [![Linux][linux-badge]](#requirements) [![macOS][macos-badge]](#requirements) [![Windows][windows-badge]](#requirements)
+
 A small, clean **[PySide6](https://doc.qt.io/qtforpython-6/)** desktop app that opens an
-SVG icon sprite (e.g. `icons.svg`), extracts every `<symbol>` and presents the icons in
-a responsive tile grid.
+SVG sprite (e.g. `icons.svg`), extracts icons from `symbol`, `defs`, `stack`, and `view`
+sprites, and presents them in a responsive tile grid.
 
 ![Sprite Viewer screenshot](docs/screenshot.png)
 
@@ -25,8 +28,8 @@ a responsive tile grid.
 
 ## Requirements
 
-- Python 3.9+
-- PySide6 6.6+
+- Python 3.10+
+- PySide6 6.12+
 - resvg-py 0.5+ (optional but recommended; falls back to QtSvg when missing)
 
 ## Quick start (from source)
@@ -163,3 +166,23 @@ with a clear error — an icon pack is not a sprite.
 ## License
 
 GPL-3.0-or-later — see [LICENSE](LICENSE).
+
+<!-- Badges -->
+[ci-url]: https://github.com/svgforge/spriteviewer/actions/workflows/ci.yml
+[ci-badge]: https://github.com/svgforge/spriteviewer/actions/workflows/ci.yml/badge.svg?branch=main
+
+[release-url]: https://github.com/svgforge/spriteviewer/releases
+[release-badge]: https://img.shields.io/github/v/release/svgforge/spriteviewer?label=release&sort=semver&color=2f6f4f
+
+[license-url]: LICENSE
+[license-badge]: https://img.shields.io/github/license/svgforge/spriteviewer?color=2f6f4f
+
+[python-url]: https://www.python.org/
+[python-badge]: https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white
+
+[pyside-url]: https://doc.qt.io/qtforpython-6/
+[pyside-badge]: https://img.shields.io/badge/PySide6-6.12%2B-41CD52?logo=qt&logoColor=white
+
+[linux-badge]: https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black
+[macos-badge]: https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white
+[windows-badge]: https://img.shields.io/badge/Windows-0078D6

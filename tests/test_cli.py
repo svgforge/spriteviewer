@@ -73,3 +73,25 @@ def test_version_exits_with_code_0(argv, capsys):
 
     assert exit_info.value.code == 0
     assert __version__ in capsys.readouterr().out
+
+
+def test_double_dash_ends_option_parsing():
+    sprite, size, renderer = parse_args(["--size", "32", "--", "--not-an-option.svg"])
+
+    assert sprite.name == "--not-an-option.svg"
+    assert size == 32
+    assert renderer == "qtsvg"
+
+
+@pytest.mark.parametrize(
+    "argv,expected", [[["-R", "auto"], "auto"], [["-R", "resvg"], "resvg"]]
+)
+def test_renderer_accepts_auto_and_resvg(argv, expected):
+    assert parse_args(argv)[2] == expected
+
+
+def test_unknown_option_exits_with_code_2():
+    with pytest.raises(SystemExit) as exit_info:
+        parse_args(["--nope"])
+
+    assert exit_info.value.code == 2

@@ -154,3 +154,164 @@ def test_zip_with_multiple_svgs_raises(tmp_path):
 
     with pytest.raises(ValueError):
         IconStore(sprite)
+
+
+def test_reads_plain_svg_file(tmp_path):
+    sprite = tmp_path / "sprite.svg"
+    sprite.write_text(SPRITE, encoding="utf-8")
+
+    store = IconStore(sprite)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+
+
+def test_parse_viewbox_accepts_commas():
+    sprite = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <symbol id="icon-a" viewBox="0,0,24,24"><rect width="24" height="24"/></symbol>
+</svg>
+"""
+    store = IconStore(xml=sprite)
+
+    assert store.icons[0].svg.startswith("<svg")
+    assert 'viewBox="0.0 0.0 24.0 24.0"' in store.icons[0].svg
+
+
+def test_parse_viewbox_accepts_mixed_commas_and_whitespace():
+    sprite = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <symbol id="icon-a" viewBox="0, 0, 24, 24"><rect width="24" height="24"/></symbol>
+</svg>
+"""
+    store = IconStore(xml=sprite)
+
+    assert 'viewBox="0.0 0.0 24.0 24.0"' in store.icons[0].svg
+
+
+def test_symbol_without_viewbox_falls_back_to_root_viewbox():
+    sprite = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <symbol id="icon-a"><rect width="16" height="16"/></symbol>
+</svg>
+"""
+    store = IconStore(xml=sprite)
+
+    assert 'viewBox="0.0 0.0 16.0 16.0"' in store.icons[0].svg
+
+
+def test_renderer_name():
+    store = IconStore(xml=SPRITE, renderer="qtsvg")
+
+    assert store.renderer_name() == "QtSvg (SVG Tiny)"
+
+
+def test_path_and_xml_none_raise_clear_error():
+    with pytest.raises(ValueError, match="either 'path' or 'xml' must be provided"):
+        IconStore()
+
+
+def test_rejects_xml_entity_expansion():
+    xml = """\
+<?xml version="1.0"?>
+<!DOCTYPE svg [
+  <!ENTITY boom "boom">
+]>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">
+  <symbol id="a" viewBox="0 0 1 1"><rect width="1" height="1"/></symbol>
+  <text>&boom;</text>
+</svg>
+"""
+    with pytest.raises(Exception) as exc_info:
+        IconStore(xml=xml)
+
+    assert "EntitiesForbidden" in type(exc_info.value).__name__
+
+
+DEFS_SPRITE = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <svg id="icon-a" viewBox="0 0 24 24">
+      <rect width="24" height="24" fill="#000000"/>
+    </svg>
+    <svg id="icon-b" viewBox="0 0 10 10">
+      <circle cx="5" cy="5" r="5" fill="#ff0000"/>
+    </svg>
+  </defs>
+</svg>
+"""
+
+
+STACK_SPRITE = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <style>:root>svg{display:none}:root>svg:target{display:block}</style>
+  <svg id="icon-a" viewBox="0 0 24 24">
+    <rect width="24" height="24" fill="#000000"/>
+  </svg>
+  <svg id="icon-b" viewBox="0 0 10 10">
+    <circle cx="5" cy="5" r="5" fill="#ff0000"/>
+  </svg>
+</svg>
+"""
+
+
+VIEW_SPRITE = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24">
+  <view id="icon-a" viewBox="0 0 24 24"/>
+  <view id="icon-b" viewBox="24 0 10 10"/>
+  <svg id="icon-a-shape" x="0" y="0" width="24" height="24" viewBox="0 0 24 24">
+    <rect width="24" height="24" fill="#000000"/>
+  </svg>
+  <svg id="icon-b-shape" x="24" y="0" width="10" height="10" viewBox="0 0 10 10">
+    <circle cx="5" cy="5" r="5" fill="#ff0000"/>
+  </svg>
+</svg>
+"""
+
+
+def test_extract_defs_sprite():
+    store = IconStore(xml=DEFS_SPRITE)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+    assert 'viewBox="0.0 0.0 24.0 24.0"' in store.icons[0].svg
+
+
+def test_extract_stack_sprite():
+    store = IconStore(xml=STACK_SPRITE)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+    assert 'viewBox="0.0 0.0 10.0 10.0"' in store.icons[1].svg
+
+
+def test_extract_view_sprite():
+    store = IconStore(xml=VIEW_SPRITE)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+    assert 'viewBox="0.0 0.0 24.0 24.0"' in store.icons[0].svg
+    assert 'viewBox="24.0 0.0 10.0 10.0"' in store.icons[1].svg
+
+
+def test_render_defs_sprite(qapp):
+    store = IconStore(xml=DEFS_SPRITE, renderer="qtsvg")
+
+    image = store.render(store.icons[0], 32)
+
+    assert not image.isNull()
+    assert image.width() == 32
+
+
+def test_render_stack_sprite(qapp):
+    store = IconStore(xml=STACK_SPRITE, renderer="qtsvg")
+
+    image = store.render(store.icons[1], 32)
+
+    assert not image.isNull()
+    assert image.width() == 32
+
+
+def test_render_view_sprite(qapp):
+    store = IconStore(xml=VIEW_SPRITE, renderer="qtsvg")
+
+    image = store.render(store.icons[0], 32)
+
+    assert not image.isNull()
+    assert image.width() == 32
