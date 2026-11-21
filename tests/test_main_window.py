@@ -102,7 +102,9 @@ def test_selected_item_fills_the_whole_cell(qapp):
         assert not is_highlight(image.pixelColor(x, cell.y() + 1))
         top = cell.y() + 6
         bottom = cell.y() + cell.height() - 6
-        matching = sum(1 for y in range(top, bottom) if is_highlight(image.pixelColor(x, y)))
+        matching = sum(
+            1 for y in range(top, bottom) if is_highlight(image.pixelColor(x, y))
+        )
         assert matching >= (bottom - top) * 0.97
     finally:
         _close(window)
