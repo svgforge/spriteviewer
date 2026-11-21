@@ -63,7 +63,7 @@ def test_sprite_without_symbols_shows_empty_state_message(qapp):
         assert window._stack.currentIndex() == 1
         label = window._empty_state.findChild(QLabel)
         assert label is not None
-        assert label.text() == "no valid svg file with symbols"
+        assert label.text() == "No icons found in SVG sprite"
     finally:
         _close(window)
 
@@ -95,17 +95,15 @@ def test_selected_item_fills_the_whole_cell(qapp):
                 and abs(color.blue() - highlight.blue()) <= 8
             )
 
-        x = cell.x() + cell.width() // 4  # well inside the rounded corners
-        # inset gap on top and bottom
+        # Sample in the left margin: inside the selection, outside the icon and
+        # rounded corners.
+        x = cell.x() + 5
         assert not is_highlight(image.pixelColor(x, cell.y()))
         assert not is_highlight(image.pixelColor(x, cell.y() + 1))
-        # the central band is highlighted
-        matching = sum(
-            1
-            for y in range(cell.y() + 2, cell.y() + cell.height() - 2)
-            if is_highlight(image.pixelColor(x, y))
-        )
-        assert matching >= (cell.height() - 4) * 0.97
+        top = cell.y() + 6
+        bottom = cell.y() + cell.height() - 6
+        matching = sum(1 for y in range(top, bottom) if is_highlight(image.pixelColor(x, y)))
+        assert matching >= (bottom - top) * 0.97
     finally:
         _close(window)
 
@@ -143,15 +141,17 @@ def test_selection_looks_the_same_across_styles_and_palettes(qapp, style_name):
                     and abs(color.blue() - highlight.blue()) <= 8
                 )
 
-            x = cell.x() + cell.width() // 4
+            # Sample in the left margin: inside the selection, outside the icon
+            # and rounded corners.
+            x = cell.x() + 5
             assert not is_highlight(image.pixelColor(x, cell.y()))
             assert not is_highlight(image.pixelColor(x, cell.y() + 1))
+            top = cell.y() + 6
+            bottom = cell.y() + cell.height() - 6
             matching = sum(
-                1
-                for y in range(cell.y() + 2, cell.y() + cell.height() - 2)
-                if is_highlight(image.pixelColor(x, y))
+                1 for y in range(top, bottom) if is_highlight(image.pixelColor(x, y))
             )
-            assert matching >= (cell.height() - 4) * 0.97
+            assert matching >= (bottom - top) * 0.97
         finally:
             _close(window)
     finally:

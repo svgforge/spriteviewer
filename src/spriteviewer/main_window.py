@@ -235,7 +235,7 @@ class MainWindow(QMainWindow):
         """Centered notice shown when the sprite contains no symbols."""
         page = QWidget()
         layout = QVBoxLayout(page)
-        label = QLabel("no valid svg file with symbols")
+        label = QLabel("No icons found in SVG sprite")
         label.setAlignment(Qt.AlignCenter)
         label.setWordWrap(True)
         layout.addWidget(label)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import gzip
 import xml.etree.ElementTree as ET
 import zipfile
@@ -112,13 +113,80 @@ class IconStore:
     def _extract(self, xml: str) -> list[Icon]:
         root = _safe_fromstring(xml)
         default_viewbox = root.get("viewBox", "0 0 64 64")
+
+        views = self._extract_views(root)
+        if views:
+            return views
+
+        symbols = self._extract_symbols(root, default_viewbox)
+        if symbols:
+            return symbols
+
+        defs_icons = self._extract_defs(root, default_viewbox)
+        if defs_icons:
+            return defs_icons
+
+        return self._extract_stack(root, default_viewbox)
+
+    def _extract_views(self, root) -> list[Icon]:
+        icons = []
+        for view in root.iter(f"{{{SVG_NS}}}view"):
+            icon_id = view.get("id")
+            viewbox = view.get("viewBox")
+            if not icon_id or not viewbox:
+                continue
+            icons.append(Icon(id=icon_id, svg=self._view_document(root, viewbox)))
+        return icons
+
+    @staticmethod
+    def _view_document(root, viewbox: str) -> str:
+        """Crop the sprite to a <view> region by overriding the root viewBox."""
+        x, y, w, h = IconStore._parse_viewbox(viewbox)
+        svg = copy.deepcopy(root)
+        svg.set("viewBox", f"{x} {y} {w} {h}")
+        svg.set("width", f"{w}")
+        svg.set("height", f"{h}")
+        return ET.tostring(svg, encoding="unicode")
+
+    def _extract_symbols(self, root, default_viewbox: str) -> list[Icon]:
         icons = []
         for symbol in root.iter(f"{{{SVG_NS}}}symbol"):
             icon_id = symbol.get("id")
             if not icon_id:
                 continue
             viewbox = self._parse_viewbox(symbol.get("viewBox", default_viewbox))
-            icons.append(Icon(id=icon_id, svg=self._to_document(symbol, viewbox)))
+            icons.append(Icon(id=icon_id, svg=self._symbol_document(symbol, viewbox)))
+        return icons
+
+    def _extract_defs(self, root, default_viewbox: str) -> list[Icon]:
+        icons = []
+        for defs in root.iter(f"{{{SVG_NS}}}defs"):
+            for child in list(defs):
+                icon_id = child.get("id")
+                if not icon_id:
+                    continue
+                if child.tag not in (
+                    f"{{{SVG_NS}}}svg",
+                    f"{{{SVG_NS}}}symbol",
+                    f"{{{SVG_NS}}}g",
+                ):
+                    continue
+                icons.append(
+                    Icon(id=icon_id, svg=self._element_document(child, default_viewbox))
+                )
+        return icons
+
+    def _extract_stack(self, root, default_viewbox: str) -> list[Icon]:
+        icons = []
+        for child in list(root):
+            icon_id = child.get("id")
+            if not icon_id:
+                continue
+            if child.tag != f"{{{SVG_NS}}}svg":
+                continue
+            icons.append(
+                Icon(id=icon_id, svg=self._element_document(child, default_viewbox))
+            )
         return icons
 
     @staticmethod
@@ -130,12 +198,8 @@ class IconStore:
         return x, y, w, h
 
     @staticmethod
-    def _to_document(symbol, viewbox) -> str:
-        """Wrap a symbol into a standalone SVG document.
-
-        Each symbol is self-contained (gradients, clip paths etc. live inside
-        it), so copying its child elements is enough for a correct render.
-        """
+    def _symbol_document(symbol, viewbox) -> str:
+        """Wrap a symbol into a standalone SVG document."""
         x, y, w, h = viewbox
         svg = ET.Element(
             f"{{{SVG_NS}}}svg",
@@ -145,7 +209,42 @@ class IconStore:
                 "height": f"{h}",
             },
         )
-        for child in symbol:
+        for child in copy.deepcopy(symbol):
+            svg.append(child)
+        return ET.tostring(svg, encoding="unicode")
+
+    @staticmethod
+    def _element_document(element, default_viewbox: str) -> str:
+        """Serialize an SVG shape element as a standalone SVG document."""
+        element = copy.deepcopy(element)
+        if element.tag == f"{{{SVG_NS}}}svg":
+            viewbox = element.get("viewBox", default_viewbox)
+            x, y, w, h = IconStore._parse_viewbox(viewbox)
+            element.set("viewBox", f"{x} {y} {w} {h}")
+            element.set("width", f"{w}")
+            element.set("height", f"{h}")
+            return ET.tostring(element, encoding="unicode")
+
+        if element.tag == f"{{{SVG_NS}}}symbol":
+            viewbox = IconStore._parse_viewbox(element.get("viewBox", default_viewbox))
+            return IconStore._symbol_document(element, viewbox)
+
+        viewbox = IconStore._parse_viewbox(element.get("viewBox", default_viewbox))
+        return IconStore._to_document(element, viewbox)
+
+    @staticmethod
+    def _to_document(element, viewbox) -> str:
+        """Wrap an element's children into a standalone SVG document."""
+        x, y, w, h = viewbox
+        svg = ET.Element(
+            f"{{{SVG_NS}}}svg",
+            {
+                "viewBox": f"{x} {y} {w} {h}",
+                "width": f"{w}",
+                "height": f"{h}",
+            },
+        )
+        for child in copy.deepcopy(element):
             svg.append(child)
         return ET.tostring(svg, encoding="unicode")
 

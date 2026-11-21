@@ -225,3 +225,93 @@ def test_rejects_xml_entity_expansion():
         IconStore(xml=xml)
 
     assert "EntitiesForbidden" in type(exc_info.value).__name__
+
+
+DEFS_SPRITE = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <svg id="icon-a" viewBox="0 0 24 24">
+      <rect width="24" height="24" fill="#000000"/>
+    </svg>
+    <svg id="icon-b" viewBox="0 0 10 10">
+      <circle cx="5" cy="5" r="5" fill="#ff0000"/>
+    </svg>
+  </defs>
+</svg>
+"""
+
+
+STACK_SPRITE = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <style>:root>svg{display:none}:root>svg:target{display:block}</style>
+  <svg id="icon-a" viewBox="0 0 24 24">
+    <rect width="24" height="24" fill="#000000"/>
+  </svg>
+  <svg id="icon-b" viewBox="0 0 10 10">
+    <circle cx="5" cy="5" r="5" fill="#ff0000"/>
+  </svg>
+</svg>
+"""
+
+
+VIEW_SPRITE = """\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 24">
+  <view id="icon-a" viewBox="0 0 24 24"/>
+  <view id="icon-b" viewBox="24 0 10 10"/>
+  <svg id="icon-a-shape" x="0" y="0" width="24" height="24" viewBox="0 0 24 24">
+    <rect width="24" height="24" fill="#000000"/>
+  </svg>
+  <svg id="icon-b-shape" x="24" y="0" width="10" height="10" viewBox="0 0 10 10">
+    <circle cx="5" cy="5" r="5" fill="#ff0000"/>
+  </svg>
+</svg>
+"""
+
+
+def test_extract_defs_sprite():
+    store = IconStore(xml=DEFS_SPRITE)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+    assert 'viewBox="0.0 0.0 24.0 24.0"' in store.icons[0].svg
+
+
+def test_extract_stack_sprite():
+    store = IconStore(xml=STACK_SPRITE)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+    assert 'viewBox="0.0 0.0 10.0 10.0"' in store.icons[1].svg
+
+
+def test_extract_view_sprite():
+    store = IconStore(xml=VIEW_SPRITE)
+
+    assert [icon.id for icon in store.icons] == ["icon-a", "icon-b"]
+    assert 'viewBox="0.0 0.0 24.0 24.0"' in store.icons[0].svg
+    assert 'viewBox="24.0 0.0 10.0 10.0"' in store.icons[1].svg
+
+
+def test_render_defs_sprite(qapp):
+    store = IconStore(xml=DEFS_SPRITE, renderer="qtsvg")
+
+    image = store.render(store.icons[0], 32)
+
+    assert not image.isNull()
+    assert image.width() == 32
+
+
+def test_render_stack_sprite(qapp):
+    store = IconStore(xml=STACK_SPRITE, renderer="qtsvg")
+
+    image = store.render(store.icons[1], 32)
+
+    assert not image.isNull()
+    assert image.width() == 32
+
+
+def test_render_view_sprite(qapp):
+    store = IconStore(xml=VIEW_SPRITE, renderer="qtsvg")
+
+    image = store.render(store.icons[0], 32)
+
+    assert not image.isNull()
+    assert image.width() == 32

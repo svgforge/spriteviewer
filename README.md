@@ -4,8 +4,8 @@
 [![Python][python-badge]][python-url] [![PySide6][pyside-badge]][pyside-url] [![Linux][linux-badge]](#requirements) [![macOS][macos-badge]](#requirements) [![Windows][windows-badge]](#requirements)
 
 A small, clean **[PySide6](https://doc.qt.io/qtforpython-6/)** desktop app that opens an
-SVG icon sprite (e.g. `icons.svg`), extracts every `<symbol>` and presents the icons in
-a responsive tile grid.
+SVG sprite (e.g. `icons.svg`), extracts icons from `symbol`, `defs`, `stack`, and `view`
+sprites, and presents them in a responsive tile grid.
 
 ![Sprite Viewer screenshot](docs/screenshot.png)
 

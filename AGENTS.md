@@ -11,14 +11,16 @@ communication with the human are written in English — no other language in any
 repository artifact. Existing non-English content (e.g. this file) is
 translated to English and stays English.
 
-## 2. Confirmation duty (BEFORE every operation)
+## 2. Confirmation duty (BEFORE state-changing operations)
 
-**Standard procedure for every action that changes something (deletes, moves,
-overwrites, writes, installs, cleans up): first present the human a concrete
-list of the affected paths/files showing the exactly named action steps, and
-wait for their explicit "yes" BEFORE execution begins. No confirming "in the
-same breath" as executing. Exception only for purely read-only actions that do
-not change state.
+- **Direct, clear instructions are already confirmed.** When the human explicitly
+  asks for a concrete action, execute it without asking for an extra "yes".
+- **Unasked or agent-suggested changes need confirmation.** Before any action
+  that changes something (deletes, moves, overwrites, writes, installs, cleans
+  up) that the human did not explicitly request, present a concrete list of the
+  affected paths/files with the exact action steps and wait for explicit
+  confirmation before execution begins.
+- Exception: purely read-only actions that do not change state.
 
 ## 3. Working area (non-negotiable)
 
@@ -68,9 +70,7 @@ not change state.
 
 ## 7. Behaviour
 
-- Never secretly, never without asking back, never more than the human asks
-  for.
+- Never secretly, never more than the human asks for.
 - Always do only what the human currently requests — no overzealous own
   initiative, no "cleanup actions" without a commission.
-- Admit mistakes, do not cover them up; in case of damage report immediately
-  and make the next action dependent on the human's approval.
+- Admit mistakes, do not cover them up; in case of damage report immediately.
